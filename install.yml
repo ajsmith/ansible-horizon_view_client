@@ -2,12 +2,15 @@
 - name: Install the VMware Horizon client on RHEL
   hosts: all
   become: yes
+  vars:
+    dl_path: https://download3.vmware.com/software/view/viewclients/CART18FQ3
+    dl_filename: VMware-Horizon-Client-4.6.0-6617224.x64.bundle
   tasks:
 
     - name: Download installer bundle
       get_url:
-        url: https://download3.vmware.com/software/view/viewclients/CART16Q4/VMware-Horizon-Client-4.3.0-4710754.x64.bundle
-        dest: /root/VMware-Horizon-Client-4.3.0-4710754.x64.bundle
+        url: "{{ dl_path }}/{{ dl_filename }}"
+        dest: "/root/{{ dl_filename }}"
         mode: 0755
         owner: root
         group: root
@@ -15,7 +18,7 @@
     - name: Run the installer
       command: >-
         /usr/bin/env TERM=dumb VMWARE_EULAS_AGREED=yes
-        /root/VMware-Horizon-Client-4.3.0-4710754.x64.bundle
+        /root/{{ dl_filename }}
         --console
         --required
 
@@ -23,28 +26,29 @@
       yum: name={{ packages }} state=installed
       vars:
         packages:
-          - xorg-x11-xauth
-          - libXScrnSaver
           - atk
           - gdk-pixbuf2
           - gtk2
-          - libgudev1
+          - libXScrnSaver
           - libXtst
+          - libgudev1
+          - libxkbfile
           - xorg-x11-fonts-*
+          - xorg-x11-xauth
       when: ansible_distribution == "RedHat" and ansible_distribution_major_version == "6"
 
     - name: Install additional packages
       yum: name={{ packages }} state=installed
       vars:
         packages:
-          - xorg-x11-xauth
-          - libpng12
-          - libXScrnSaver
           - atk
           - gdk-pixbuf2
           - gtk2
+          - libXScrnSaver
           - libgudev1
+          - libpng12
           - xorg-x11-fonts-*
+          - xorg-x11-xauth
       when: ansible_distribution == "RedHat" and ansible_distribution_major_version == "7"
 
     - name: Create symlink for libudev.so.0
